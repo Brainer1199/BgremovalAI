@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Removal Tool</title>
+    <style>
+        body {
+            background-color: #fff; /* Set background color to white */
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .image-column {
+            width: 48%;
+            border: 2px solid #ccc; /* Add border to image containers */
+            padding: 10px;
+            border-radius: 5px; /* Add border radius */
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+            border: 1px solid #000; /* Add border to images */
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Style for buttons */
+        button {
+            background-color: #800080; /* Purple */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #9932CC; /* Darker purple */
+        }
+
+        /* Center download link */
+        #downloadButton {
+            display: none; /* Initially hide the button */
+            margin: 0 auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1><Center>Pixi_AI Background Removal Tool</center></h1>
+    <div class="image-container">
+        <div class="image-column">
+            <h2>Uploaded Image:</h2>
+            <input type="file" accept="image/*" id="fileInput" onchange="displayUploadedImage()">
+            <img id="uploadedImage" style="display: none;">
+        </div>
+        <div class="image-column">
+            <h2>Background Removed Image:</h2>
+            <button onclick="removeBackground()">Remove Background</button>
+            <div class="loader" id="loader"></div>
+            <img id="outputImage" style="display: none;">
+        </div>
+    </div>
+    <br>
+    <button id="downloadButton" style="display: none;" onclick="downloadImage()">Download Image</button>
+
+    <script>
+        function displayUploadedImage() {
+            const inputElement = document.getElementById('fileInput');
+            const file = inputElement.files[0];
+
+            // Display the uploaded image
+            const uploadedImage = document.getElementById('uploadedImage');
+            uploadedImage.src = URL.createObjectURL(file);
+            uploadedImage.style.display = 'block';
+        }
+
+        function removeBackground() {
+            const inputElement = document.getElementById('fileInput');
+            const file = inputElement.files[0];
+            const formData = new FormData();
+            formData.append('image_file', file);
+
+            // Show loader
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            fetch('https://api.remove.bg/v1.0/removebg', {
+                method: 'POST',
+                headers: {
+                    'X-Api-Key': 'rBdRE3P22CCsWvZt8ZGKwYTR'
+                },
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const objectUrl = URL.createObjectURL(blob);
+                const outputImage = document.getElementById('outputImage');
+                outputImage.src = objectUrl;
+                outputImage.style.display = 'block';
+
+                const downloadButton = document.getElementById('downloadButton');
+                downloadButton.style.display = 'inline-block'; // Show the download button
+
+                // Hide loader
+                loader.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Hide loader on error
+                loader.style.display = 'none';
+            });
+        }
+
+        function downloadImage() {
+            const outputImage = document.getElementById('outputImage');
+            const url = outputImage.src;
+
+            const anchorElement = document.createElement('a');
+            anchorElement.href = url;
+            anchorElement.download = 'output.png';
+            document.body.appendChild(anchorElement);
+            anchorElement.click();
+            document.body.removeChild(anchorElement);
+        }
+    </script>
+</body>
+</html>
